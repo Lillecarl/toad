@@ -235,8 +235,6 @@ class PathSearch(containers.VerticalGroup):
             )
             return
 
-        # fuzzy_search = self.fuzzy_search
-        # fuzzy_search.cache.grow(len(self.paths))
         display_paths = await self.fuzzy_index.search(search)
 
         if len(display_paths) > 20:
@@ -321,6 +319,15 @@ class PathSearch(containers.VerticalGroup):
 
     @classmethod
     def make_relative(cls, path: Path, root: Path) -> Path:
+        """Make a path relative from the root.
+
+        Args:
+            path: Path to consider.
+            root: Root path.
+
+        Returns:
+            A relative path.
+        """
         return path.resolve().relative_to(root.resolve())
 
     @on(DirectoryTree.NodeHighlighted)
@@ -330,7 +337,6 @@ class PathSearch(containers.VerticalGroup):
         dir_entry = event.node.data
         if dir_entry is not None:
             try:
-                # path = Path(dir_entry.path).resolve().relative_to(self.root.resolve())
                 path = await asyncio.to_thread(
                     self.make_relative, dir_entry.path, self.root
                 )
@@ -350,7 +356,6 @@ class PathSearch(containers.VerticalGroup):
                 path = await asyncio.to_thread(
                     self.make_relative, dir_entry.path, self.root
                 )
-                # path = Path(dir_entry.path).resolve().relative_to(self.root.resolve())
             except ValueError:
                 return
             tree_path = str(path)
