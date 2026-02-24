@@ -20,6 +20,21 @@ A unified interface for AI in your terminal ([release announcement](https://will
   
 </table>
 
+## Quickstart
+
+Install:
+
+```
+curl -fsSL batrachian.ai/install | sh
+```
+
+Run:
+
+```
+toad
+```
+
+See [Getting Started](#getting-started) if you have any problems.
 
 ## What is Toad?
 
@@ -284,6 +299,7 @@ This project is trialling a non-traditional approach to issues.
 Before an issue is created, there must be a post in Discussions, approved by a Toad dev (Currently @willmcgugan).
 
 By allowing the discussions to happen in the Discussion tabs, issues can be reserved for actionable tasks with a clear description and goal.
+
 
 
 
