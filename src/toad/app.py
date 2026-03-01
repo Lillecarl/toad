@@ -1,4 +1,5 @@
 import asyncio
+import gc
 from importlib.resources import files
 from datetime import datetime, timezone
 from functools import cached_property
@@ -288,6 +289,7 @@ class ToadApp(App, inherit_bindings=False):
             mode: Initial mode.
             agent: Agent identity or shor name.
         """
+        gc.disable()
         self.settings_changed_signal: Signal[tuple[int, object]] = Signal(
             self, "settings_changed"
         )
@@ -660,6 +662,12 @@ class ToadApp(App, inherit_bindings=False):
         self.set_timer(1, self.run_version_check)
         self.set_process_title()
         self.update_show_sessions()
+
+        def gc_enable() -> None:
+            gc.freeze()
+            gc.enable()
+
+        self.call_after_refresh(gc_enable)
 
     @work(thread=True, exit_on_error=False)
     def set_process_title(self) -> None:

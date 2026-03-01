@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import gc
 from asyncio import Future
 import asyncio
-from dataclasses import dataclass
+
 from contextlib import suppress
 from functools import partial
 from itertools import filterfalse
@@ -837,6 +838,7 @@ class Conversation(containers.Vertical):
                 )
             finally:
                 self.busy_count -= 1
+            gc.disable()
             self.call_later(self.agent_turn_over, stop_reason)
 
     async def agent_turn_over(self, stop_reason: str | None) -> None:
@@ -845,6 +847,7 @@ class Conversation(containers.Vertical):
         Args:
             stop_reason: The stop reason returned from the Agent, or `None`.
         """
+        gc.enable()
         self.turn = "client"
         if self._agent_thought is not None and self._agent_thought.loading:
             await self._agent_thought.remove()
@@ -1384,6 +1387,7 @@ class Conversation(containers.Vertical):
             self.agent_ready = True
 
         self.update_title()
+        gc.freeze()
 
     def _settings_changed(self, setting_item: tuple[str, str]) -> None:
         key, value = setting_item

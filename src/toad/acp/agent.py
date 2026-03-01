@@ -735,11 +735,9 @@ class Agent(AgentBase):
 
         """
         with self.request():
-            print(1, prompt)
             session_prompt = api.session_prompt(prompt, self.session_id)
         try:
             result = await session_prompt.wait()
-            print(2, result)
         except jsonrpc.APIError as error:
             details = ""
             match error.data:
