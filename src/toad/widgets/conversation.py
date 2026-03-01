@@ -820,6 +820,7 @@ class Conversation(containers.Vertical):
         if self.agent is not None:
             stop_reason: str | None = None
             self.busy_count += 1
+            gc.disable()
             try:
                 self.turn = "agent"
                 stop_reason = await self.agent.send_prompt(prompt)
@@ -837,8 +838,8 @@ class Conversation(containers.Vertical):
                     )
                 )
             finally:
+                gc.enable()
                 self.busy_count -= 1
-            gc.disable()
             self.call_later(self.agent_turn_over, stop_reason)
 
     async def agent_turn_over(self, stop_reason: str | None) -> None:
@@ -1387,7 +1388,7 @@ class Conversation(containers.Vertical):
             self.agent_ready = True
 
         self.update_title()
-        gc.freeze()
+        gc.freeze()  # All objects at this point will be more or less permanent
 
     def _settings_changed(self, setting_item: tuple[str, str]) -> None:
         key, value = setting_item

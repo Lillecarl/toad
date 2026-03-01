@@ -663,11 +663,12 @@ class ToadApp(App, inherit_bindings=False):
         self.set_process_title()
         self.update_show_sessions()
 
-        def gc_enable() -> None:
-            gc.freeze()
+        def gc_start() -> None:
+            """Start garbage collection."""
+            gc.freeze()  # Freeze app objects which will be permantent anyway
             gc.enable()
 
-        self.call_after_refresh(gc_enable)
+        self.call_after_refresh(gc_start)
 
     @work(thread=True, exit_on_error=False)
     def set_process_title(self) -> None:
