@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Style tweaks for tools
 - Some GC optimizations to smooth startup and scrolling
 
 ## [0.6.5] - 2026-02-27
