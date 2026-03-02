@@ -320,7 +320,7 @@ class DiffView(containers.VerticalGroup):
                     additions += j2 - j1
                     removals += i2 - i1
                 elif tag == "insert":
-                    additions += j1 - j2
+                    additions += j2 - j1
         return additions, removals
 
     @classmethod

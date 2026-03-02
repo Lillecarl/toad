@@ -5,6 +5,7 @@ from textual import containers
 
 from textual import getters
 from textual.binding import Binding
+from textual.content import Content
 from textual.screen import Screen
 from textual.reactive import var, Initialize
 
@@ -175,6 +176,7 @@ class PermissionsScreen(Screen[Answer]):
         self,
         options: list[Answer],
         diffs: list[tuple[str, str, str | None, str]] | None = None,
+        agent_name: str = "The Agent",
         *,
         name: str | None = None,
         id: str | None = None,
@@ -192,6 +194,7 @@ class PermissionsScreen(Screen[Answer]):
         super().__init__(name=name, id=id, classes=classes)
         self.options = options
         self.diffs = diffs
+        self.agent_name = agent_name
 
     def get_diff_type(self) -> str:
         app = self.app
@@ -215,7 +218,10 @@ class PermissionsScreen(Screen[Answer]):
                 id="diff-select",
             )
             yield Static(
-                "[b]Approval request[/b] [dim]The Agent wishes to make the following changes",
+                Content.from_markup(
+                    "[b]Approval request[/b] [dim]$name wishes to make the following changes",
+                    name=self.agent_name,
+                ),
                 id="instructions",
             )
             with containers.Vertical(id="nav-container"):
@@ -389,7 +395,7 @@ def loop_first_last(values: Iterable[ValueType]) -> Iterable[tuple[bool, bool, V
         async def on_mount(self) -> None:
             screen = PermissionsScreen(
                 [Answer("Foo", "allow_once", kind="allow_once"), Answer("Bar", "bar")],
-                None,
+                [("foo.py", "foo2.py", SOURCE1, SOURCE2)],
             )
             result = await self.push_screen_wait(screen)
             self.notify(str(result))

@@ -1224,7 +1224,9 @@ class Conversation(containers.Vertical):
                     title="Permissions request",
                     sound="question",
                 )
-                permissions_screen = PermissionsScreen(options, diffs)
+                permissions_screen = PermissionsScreen(
+                    options, diffs, agent_name=self.agent_title or "The Agent"
+                )
                 result = await self.app.push_screen_wait(
                     permissions_screen, mode=self.screen.id
                 )
