@@ -999,9 +999,12 @@ class Conversation(containers.Vertical):
                 tool_id, ToolCall
             )
         except NoMatches:
+            self._agent_thought = None
+            self._agent_response = None
             await self.post(ToolCall(tool_call, id=message.tool_id))
         else:
-            existing_tool_call.tool_call = tool_call
+            if existing_tool_call is not None:
+                existing_tool_call.update_tool_call(tool_call)
 
     @on(acp_messages.AvailableCommandsUpdate)
     async def on_acp_available_commands_update(

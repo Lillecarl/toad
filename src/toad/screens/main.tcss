@@ -190,7 +190,7 @@ Conversation {
             display: none;
         }
         &.-has-content #tool-content {            
-            margin: 1 1 0 0;            
+            margin: 1 1 1 0;            
             DiffView {
                 margin: 0 1 1 0;                                              
                 &:last-of-type {
