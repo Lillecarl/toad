@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.6.9] - 2026-03-10
+
+### Fixed
+
+- Fixed tool calls not refreshing
+- Fixed tool call ordering
+- Fixed anchoring behavor
+
+### Changed
+
+- Re-neabled experimental GC management via Rich
+- The `end` key will now scroll the conversation to the end, if the cursor is already at the end of the prompt 
+
+### Added
+
+- Added Cursor to store
+
 ## [0.6.8] - 2026-03-03
 
 ### Fixed
@@ -360,6 +378,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release. This document will be updated for subsequent releases.
 
+[0.6.9]: https://github.com/batrachianai/toad/compare/v0.6.8...v0.6.9
 [0.6.8]: https://github.com/batrachianai/toad/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/batrachianai/toad/compare/v0.6.6...v0.6.7
 [0.6.6]: https://github.com/batrachianai/toad/compare/v0.6.5...v0.6.6

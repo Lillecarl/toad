@@ -656,7 +656,7 @@ class Conversation(containers.Vertical):
         if self._agent_response is None:
             if fragment.strip():
                 self._agent_response = agent_response = AgentResponse(fragment)
-                await self.post(agent_response)
+                await self.post(agent_response, new_block=False)
         else:
             await self._agent_response.append_fragment(fragment)
         return self._agent_response
@@ -668,7 +668,7 @@ class Conversation(containers.Vertical):
         if self._agent_thought is None:
             if thought_fragment.strip():
                 self._agent_thought = AgentThought(thought_fragment)
-                await self.post(self._agent_thought)
+                await self.post(self._agent_thought, new_block=False)
         else:
             await self._agent_thought.append_fragment(thought_fragment)
         return self._agent_thought
@@ -803,6 +803,7 @@ class Conversation(containers.Vertical):
                 await self.shell_history.append(event.body)
                 self.shell_history_index = 0
                 await self.post_shell(event.body)
+            self.window.scroll_end(animate=False)
         elif text := event.body.strip():
             await self.prompt_history.append(event.body)
             self.prompt_history_index = 0
@@ -810,6 +811,7 @@ class Conversation(containers.Vertical):
                 # Toad has processed the slash command.
                 return
             await self.post(UserInput(text))
+            self.window.scroll_end(animate=False)
             self._loading = await self.post(Loading("Please wait..."), loading=True)
             await asyncio.sleep(0)
             self.send_prompt_to_agent(text)
@@ -999,9 +1001,10 @@ class Conversation(containers.Vertical):
                 tool_id, ToolCall
             )
         except NoMatches:
-            await self.post(ToolCall(tool_call, id=message.tool_id))
+            await self.post(ToolCall(tool_call, id=message.tool_id), new_block=True)
         else:
-            existing_tool_call.tool_call = tool_call
+            if existing_tool_call is not None:
+                await existing_tool_call.update_tool_call(tool_call)
 
     @on(acp_messages.AvailableCommandsUpdate)
     async def on_acp_available_commands_update(
@@ -1387,6 +1390,7 @@ class Conversation(containers.Vertical):
             self.agent_ready = True
 
         self.update_title()
+        self.window.anchor()
 
     def _settings_changed(self, setting_item: tuple[str, str]) -> None:
         key, value = setting_item
@@ -1477,28 +1481,37 @@ class Conversation(containers.Vertical):
                 break
             widget = parent
 
+    def new_block(self) -> None:
+        """Start a new block for agent response."""
+        self._agent_thought = None
+        self._agent_response = None
+
     async def post[WidgetType: Widget](
-        self, widget: WidgetType, *, anchor: bool = True, loading: bool = False
+        self,
+        widget: WidgetType,
+        *,
+        loading: bool = False,
+        new_block: bool = True,
     ) -> WidgetType:
         """Post a widget to the converstaion.
 
         Args:
             widget: Widget to post.
-            anchor: Anchor to bottom of view?
             loading: Set the widget to an initial loading state?
+            new_block: Start a new block?
 
         Returns:
             The widget that was mounted.
         """
         if self._loading is not None:
             await self._loading.remove()
+        if new_block and not loading:
+            self.new_block()
         if not self.contents.is_attached:
             return widget
         await self.contents.mount(widget)
 
         widget.loading = loading
-        if anchor:
-            self.window.anchor()
         self._require_check_prune = True
         self.call_after_refresh(self.check_prune)
         return widget

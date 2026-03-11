@@ -238,6 +238,9 @@ class MainScreen(Screen, can_focus=False):
         self.app.call_later(self.app.remove_mode, current_mode)
 
     def on_mount(self) -> None:
+        import gc
+
+        gc.freeze()
         for tree in self.query("#project_directory_tree").results(DirectoryTree):
             tree.data_bind(path=MainScreen.project_path)
         for tree in self.query(DirectoryTree):

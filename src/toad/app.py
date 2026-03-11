@@ -274,6 +274,8 @@ class ToadApp(App, inherit_bindings=False):
 
     HORIZONTAL_BREAKPOINTS = [(0, "-narrow"), (100, "-wide")]
 
+    PAUSE_GC_ON_SCROLL = True
+
     def __init__(
         self,
         agent_data: AgentData | None = None,
