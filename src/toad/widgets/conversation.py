@@ -400,6 +400,8 @@ class Conversation(containers.Vertical):
 
         self._initial_prompt = initial_prompt
 
+        self._post_lock = asyncio.Lock()
+
     def update_title(self) -> None:
         """Update the screen title."""
 
@@ -653,24 +655,26 @@ class Conversation(containers.Vertical):
         """Get or create an agent response widget."""
         from toad.widgets.agent_response import AgentResponse
 
-        if self._agent_response is None:
-            self._agent_response = agent_response = AgentResponse(fragment)
-            await self.post(agent_response, new_block=False)
-        else:
-            await self._agent_response.append_fragment(fragment)
-        return self._agent_response
+        async with self._post_lock:
+            if self._agent_response is None:
+                self._agent_response = agent_response = AgentResponse(fragment)
+                await self.post(agent_response, new_block=False)
+            else:
+                await self._agent_response.append_fragment(fragment)
+            return self._agent_response
 
     async def post_agent_thought(self, thought_fragment: str) -> AgentThought | None:
         """Get or create an agent thought widget."""
         from toad.widgets.agent_thought import AgentThought
 
-        if self._agent_thought is None:
-            if thought_fragment.strip():
-                self._agent_thought = AgentThought(thought_fragment)
-                await self.post(self._agent_thought, new_block=False)
-        else:
-            await self._agent_thought.append_fragment(thought_fragment)
-        return self._agent_thought
+        async with self._post_lock:
+            if self._agent_thought is None:
+                if thought_fragment.strip():
+                    self._agent_thought = AgentThought(thought_fragment)
+                    await self.post(self._agent_thought, new_block=False)
+            else:
+                await self._agent_thought.append_fragment(thought_fragment)
+            return self._agent_thought
 
     @property
     def cursor_block(self) -> Widget | None:

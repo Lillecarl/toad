@@ -555,6 +555,7 @@ class Agent(AgentBase):
             # By this point we know it is a JSON RPC call
             assert isinstance(agent_data, dict)
             tasks.add(asyncio.create_task(call_jsonrpc(agent_data)))
+            await asyncio.sleep(0)
 
         # Cancel all remaining tasks and wait for them to finish
         for task in tasks:

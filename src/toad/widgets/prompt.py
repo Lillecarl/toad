@@ -243,7 +243,7 @@ See on-screen instructions for details.
             self.post_message(
                 messages.Flash(
                     "Agent is not ready. Please wait while the agent connects…",
-                    "warning",
+                    "error",
                 )
             )
             return
@@ -259,7 +259,7 @@ See on-screen instructions for details.
             self.post_message(
                 messages.Flash(
                     "Agent is not ready. Please wait while the agent connects…",
-                    "warning",
+                    "error",
                 )
             )
             return
