@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.6.9] - 2026-03-10
+## [0.6.10] - 2026-03-13
+
+### Fixed
+
+- Fixed for agent that send blank text update (Mistral)
+
+## [0.6.9] - 2026-03-11
 
 ### Fixed
 
@@ -16,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Re-neabled experimental GC management via Rich
+- Re-enabled experimental GC management via Textual
 - The `end` key will now scroll the conversation to the end, if the cursor is already at the end of the prompt 
 
 ### Added

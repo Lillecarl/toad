@@ -654,9 +654,8 @@ class Conversation(containers.Vertical):
         from toad.widgets.agent_response import AgentResponse
 
         if self._agent_response is None:
-            if fragment.strip():
-                self._agent_response = agent_response = AgentResponse(fragment)
-                await self.post(agent_response, new_block=False)
+            self._agent_response = agent_response = AgentResponse(fragment)
+            await self.post(agent_response, new_block=False)
         else:
             await self._agent_response.append_fragment(fragment)
         return self._agent_response
