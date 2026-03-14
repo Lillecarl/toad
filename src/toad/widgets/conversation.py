@@ -1343,6 +1343,11 @@ class Conversation(containers.Vertical):
                 "Open a new session in the current working directory",
                 "<initial prompt or command>",
             ),
+            SlashCommand(
+                "/toad:testimonial",
+                "Tweet a testimonial regarding Toad",
+                "<what you think of toad>",
+            ),
         ]
 
         slash_commands.extend(self.agent_slash_commands)
@@ -1921,5 +1926,19 @@ class Conversation(containers.Vertical):
                     )
                 )
                 return True
+        elif command == "toad:testimonial":
+            testimonial = (
+                parameters
+                or "Try Toad, the Universal interface for AI in your terminal"
+            )
+            from toad.twitter import open_tweet_intent
+
+            open_tweet_intent(
+                f"{testimonial}\n",
+                url="https://github.com/textualize/toad",
+                via="willmcgugan",
+                hashtags=["ai"],
+            )
+            return True
 
         return False
