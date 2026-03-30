@@ -289,7 +289,7 @@ SCHEMA: list[SchemaDict] = [
                 "title": "Allow commands",
                 "help": "List of commands (one per line) which should be considered shell commands by default, rather than a part of a prompt.",
                 "type": "text",
-                "default": "python\ngit\nls\ncat\ncd\nmv\ncp\ntree\nrm\necho\nrmdir\nmkdir\ntouch\nopen\npwd\nnano",
+                "default": "python\ngit\nls\ncat\ncd\nmv\ncp\ntree\nrm\necho\nrmdir\nmkdir\ntouch\nopen\npwd\nnano\nhead\ntail",
             },
             {
                 "key": "directory_commands",

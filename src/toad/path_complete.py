@@ -1,7 +1,8 @@
 import asyncio
+from itertools import islice
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Iterable, Literal, Sequence
 
 
 def longest_common_prefix(strings: list[str]) -> str:
@@ -41,9 +42,14 @@ class DirectoryReadTask:
         self._task: asyncio.Task | None = None
 
     def read(self) -> None:
-        # TODO: Should this be cancellable, or have a maximum number of paths for the case of very large directories?
-        for path in self.path.iterdir():
-            self.directory_listing.append(path)
+        """Read the directory contents."""
+        # TODO: Arbitary limit, to avoid stalling on very large directories
+        # Should this be configurable?
+        try:
+            for path in islice(self.path.iterdir(), None, 10_000):
+                self.directory_listing.append(path)
+        except OSError:
+            return
 
     def start(self) -> None:
         self._task = asyncio.create_task(
@@ -68,6 +74,30 @@ class PathComplete:
         self.read_tasks: dict[Path, DirectoryReadTask] = {}
         self.directory_listings: dict[Path, list[Path]] = {}
 
+    @classmethod
+    def decorate_listing(cls, paths: Iterable[Path]) -> list[str]:
+        """Add trailing slash to directories.
+
+        Args:
+            paths: A sequence of paths.
+
+        Returns:
+            A list of directory names.
+        """
+        return [(path.name + "/" if path.is_dir() else path.name) for path in paths]
+
+    @classmethod
+    def decorate_path(cls, path: Path) -> str:
+        """Add trailing slash to a path if it is a directory.
+
+        Args:
+            path: Path.
+
+        Returns:
+            The path name, potentially with a trailing slash.
+        """
+        return path.name + "/" if path.is_dir() else path.name
+
     async def __call__(
         self,
         current_working_directory: Path,
@@ -75,6 +105,17 @@ class PathComplete:
         *,
         exclude_type: Literal["file"] | Literal["dir"] | None = None,
     ) -> tuple[str | None, list[str] | None]:
+        """Attempt to auto-complete a path.
+
+        Args:
+            current_working_directory: Current working directory (to resolve relative paths).
+            path: String potentially containing path to auto-complete.
+            exclude_type: May be `"file"` to exclude files, `"dir"` to exclude directories, or `None` not to exclude anything.
+
+        Returns:
+            A pair of the recommend auto complete (or `None`), and a list of options (or `None`).
+        """
+
         current_working_directory = (
             current_working_directory.expanduser().resolve().absolute()
         )
@@ -91,51 +132,77 @@ class PathComplete:
             read_task.start()
             listing = await read_task.wait()
 
-        if exclude_type is not None:
-            if exclude_type == "dir":
-                listing = [
-                    listing_path
-                    for listing_path in listing
-                    if not listing_path.is_dir()
-                ]
-            else:
-                listing = [
-                    listing_path for listing_path in listing if listing_path.is_dir()
-                ]
+        def check_completions(
+            listing: list[Path],
+        ) -> tuple[str | None, list[str] | None]:
+            """Check completions from a listing (run in a thread)
 
-        if not node:
-            return None, [listing_path.name for listing_path in listing]
+            Args:
+                listing: List of paths.
 
-        matching_nodes = [
-            listing_path
-            for listing_path in listing
-            if listing_path.name.startswith(node)
-        ]
-        if not (matching_nodes):
-            # Nothing matches
-            return None, None
+            Returns:
+                Completions.
+            """
+            if exclude_type is not None:
+                if exclude_type == "dir":
+                    listing = [
+                        listing_path
+                        for listing_path in listing
+                        if not listing_path.is_dir()
+                    ]
+                else:
+                    listing = [
+                        listing_path
+                        for listing_path in listing
+                        if listing_path.is_dir()
+                    ]
 
-        if not (
-            prefix := longest_common_prefix(
-                [node_path.name for node_path in matching_nodes]
-            )
-        ):
-            return None, None
+            if not node:
+                return None, self.decorate_listing(listing)
 
-        picked_path = directory_path / prefix
-        path_size = (
-            len(str(Path(directory_path).expanduser().resolve())) + 1 + len(node)
-        )
-        completed_prefix = str(picked_path)[path_size:]
-        path_options = [
-            str(path)[path_size + len(completed_prefix) :] for path in matching_nodes
-        ]
-        path_options = [name for name in path_options if name]
+            node_name = Path(node).name
+            if not node_name:
+                return None, self.decorate_listing(listing)
+            matching_nodes = [
+                listing_path
+                for listing_path in listing
+                if listing_path.name.startswith(node_name)
+            ]
 
-        if picked_path.is_dir() and not path_options:
-            completed_prefix += os.sep
+            if not (matching_nodes):
+                # Nothing matches
+                return None, None
 
-        return completed_prefix or None, path_options
+            if not (
+                prefix := longest_common_prefix(
+                    [node_path.name for node_path in matching_nodes]
+                )
+            ):
+                return None, None
+
+            picked_path = directory_path / prefix
+
+            complete_name = Path(path).name
+            completed_prefix = prefix[len(complete_name) :]
+            path_options = [
+                (
+                    matched_path.name[len(complete_name) :] + "/"
+                    if matched_path.is_dir()
+                    else matched_path.name[len(complete_name) :]
+                )
+                for matched_path in matching_nodes
+                if matched_path.name.startswith(complete_name)
+            ]
+
+            if len(path_options) > 1:
+                return None, path_options
+
+            if picked_path.is_dir() and len(path_options) <= 1:
+                completed_prefix += os.sep
+
+            return completed_prefix or None, path_options
+
+        return await asyncio.to_thread(check_completions, listing)
 
 
 if __name__ == "__main__":
