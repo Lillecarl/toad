@@ -301,7 +301,9 @@ Before an issue is created, there must be a post in Discussions, approved by a T
 By allowing the discussions to happen in the Discussion tabs, issues can be reserved for actionable tasks with a clear description and goal.
 
 
+## Licensing
 
+Toad is licensed under the [AGPL](./LICENSE) license. Commercial licenses are available. See [COMMERCIAL_LICENSE.md](./COMMERCIAL_LICENSE.md).
 
 
 
