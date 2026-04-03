@@ -21,3 +21,6 @@ uv.lock
 agent.jsonl
 replay.jsonl
 sandbox/
+
+# Nix
+result

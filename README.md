@@ -34,6 +34,16 @@ Run:
 toad
 ```
 
+Run with Nix:
+
+```
+nix run github:batrachianai/toad#toad # bring your own agents
+nix run github:batrachianai/toad#toad-claude # includes claude-code and claude-agent-acp
+nix run github:batrachianai/toad#toad-codex # includes codex and codex-acp
+nix run github:batrachianai/toad#toad-gemini # includes gemini-cli
+nix run github:batrachianai/toad#toad-mistral # includes mistral-vibe
+```
+
 See [Getting Started](#getting-started) if you have any problems.
 
 ## What is Toad?
