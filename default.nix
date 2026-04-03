@@ -2,18 +2,21 @@
   pkgs ? import <nixpkgs> {
     config.allowUnfree = true;
   },
+  pyproject-nix ? import (fetchGit "git@github.com:pyproject-nix/pyproject.nix") {
+    inherit (pkgs) lib;
+  },
 }:
 let
   overlay = final: prev: {
     pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
       (python-final: python-prev: {
         textual = python-prev.textual.overridePythonAttrs (old: rec {
-          version = "8.2.2";
+          version = "8.2.3";
           src = final.fetchFromGitHub {
             owner = "Textualize";
             repo = "textual";
             rev = "v${version}";
-            hash = "sha256-+yG1LwuwPWkrJw+yw7gVgdsjJGPxdfV+ygUXDQoHTTQ=";
+            hash = "sha256-9519UH723p9S9EO7RYJM4qM9e7TyMFDMkSVWqYt+RXg=";
           };
         });
 
@@ -56,19 +59,17 @@ let
   pkgs = pkgs';
   inherit (pkgs) lib;
 
-  pyproject-nix = import /home/lillecarl/Code/pyproject.nix { inherit lib; };
-
   project = pyproject-nix.lib.project.loadPyprojectDynamic {
     projectRoot = ./.;
   };
 
   python = pkgs.python314;
 
-  arg = project.renderers.buildPythonPackage { inherit python; };
+  args = project.renderers.buildPythonPackage { inherit python; };
 
   package =
     python.pkgs.buildPythonPackage (
-      arg
+      args
       // {
         src = ./.;
 
@@ -79,7 +80,7 @@ let
         ];
 
         dependencies =
-          arg.dependencies or [ ]
+          args.dependencies or [ ]
           ++ (with python.pkgs; [
             pythonRelaxDepsHook
           ]);
@@ -91,12 +92,10 @@ let
         package.overrideAttrs (
           final: prev: {
             makeWrapperArgs = prev.makeWrapperArgs or [ ] ++ [
-              "--prefix PATH ${
-                lib.makeBinPath packages
-              }"
+              "--prefix PATH ${lib.makeBinPath packages}"
             ];
           }
         );
     };
 in
-package // { inherit package; }
+package // { inherit args pkgs package; }
